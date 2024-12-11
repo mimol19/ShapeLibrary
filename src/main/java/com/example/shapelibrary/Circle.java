@@ -1,16 +1,27 @@
 package com.example.shapelibrary;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import org.springframework.stereotype.Component;
 
-@AllArgsConstructor
-public class Circle implements Shape{
+@Component
+@Entity
+@DiscriminatorValue("circle")
+public class Circle extends Shape{
     private double radius;
+
+
 
     @Override
     public String getType() {
         return "CIRCLE";
     }
+
+    @Override
+    void setParameters(double[] doubles) {
+        this.radius = doubles[0];
+    }
+
 
     @Override
     public double calculateArea() {

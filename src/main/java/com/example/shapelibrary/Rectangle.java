@@ -1,9 +1,15 @@
 package com.example.shapelibrary;
 
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
-@AllArgsConstructor
-public class Rectangle implements Shape {
+@Component
+@Entity
+@DiscriminatorValue("rectangle")
+public class Rectangle extends Shape {
     private double width;
     private double length;
 
@@ -14,7 +20,15 @@ public class Rectangle implements Shape {
     }
 
     @Override
-    public double calculateArea() {
-        return width*length;
+    void setParameters(double[] doubles) {
+        this.width = doubles[0];
+        this.length = doubles[1];
     }
+
+    @Override
+    public double calculateArea() {
+        return width * length;
+    }
+
+
 }

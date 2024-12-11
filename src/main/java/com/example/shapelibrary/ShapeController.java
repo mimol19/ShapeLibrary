@@ -11,17 +11,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/shapes")
 public class ShapeController {
-    private ShapeService shapeService;
+    private ShapeRepository shapeRepository;
+    private ShapeFactory shapeFactory;
+
 
     @PostMapping
-    public ResponseEntity<ShapeEntity> addShape(@RequestBody ShapeRequest request) {
-        ShapeEntity entity = shapeService.addShape(request.getType(), request.getParameters());
-        return ResponseEntity.ok(entity);
+    public ResponseEntity<Shape> addShape(@RequestBody ShapeRequest request) {
+        Shape shape = shapeFactory.createShape(request);
+        return ResponseEntity.ok(shape);
     }
 
     @GetMapping
-    public ResponseEntity<List<ShapeEntity>> getShapesByType(@RequestParam String type) {
-        List<ShapeEntity> shapes = shapeService.getShapesByType(type);
+    public ResponseEntity<List<Shape>> getShapesByType(@RequestParam String type) {
+        List<Shape> shapes = shapeFactory.getShapesByType(type);
         if (shapes.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

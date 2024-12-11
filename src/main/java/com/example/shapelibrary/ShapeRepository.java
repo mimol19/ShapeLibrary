@@ -1,9 +1,10 @@
 package com.example.shapelibrary;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
-
-public interface ShapeRepository extends JpaRepository<ShapeEntity,Long> {
-    public List<ShapeEntity> findByType(String type);
+@Repository
+public interface ShapeRepository extends JpaRepository<Shape,Long> {
+    public List<Shape> findByType(String type);
 }

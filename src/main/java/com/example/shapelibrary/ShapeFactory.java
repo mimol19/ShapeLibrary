@@ -1,23 +1,43 @@
 package com.example.shapelibrary;
 
+import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+@Component
 public class ShapeFactory {
-    private static final Map<String, Function<double[], Shape>> SHAPES_MAP = new HashMap<>();
+    private final Map<String, Shape> shapeMap;
+    private final ShapeRepository shapeRepository;
 
-    static  {
-        SHAPES_MAP.put("SQUARE", parameters -> new Square(parameters[0]));
-        SHAPES_MAP.put("CIRCLE", parameters -> new Circle(parameters[0]));
-        SHAPES_MAP.put("RECTANGLE", parameters -> new Rectangle(parameters[0], parameters[1]));
+    @Autowired
+    public ShapeFactory(List<Shape> shapes, ShapeRepository shapeRepository) {
+        this.shapeMap = shapes.stream().collect(Collectors.toMap(Shape::getType, shape -> shape));
+        this.shapeRepository = shapeRepository;
     }
-    public static Shape createShape(String type, double[] parameters) {
-        Function<double[], Shape> shapeCreator = SHAPES_MAP.get(type.toUpperCase());
-        if (shapeCreator == null) {
+
+    public Shape createShape(ShapeRequest shapeRequest) {
+        String type = shapeRequest.getType();
+
+        Shape shape = shapeMap.get(type);
+        if (shape == null) {
             throw new IllegalArgumentException("Unknown shape type: " + type);
         }
-        return shapeCreator.apply(parameters);
+
+        shape.setParameters(shapeRequest.getParameters());
+        shape.setType(shapeRequest.getType());
+        shape.setId(null);
+
+        return shapeRepository.save(shape);
+    }
+
+    public List<Shape> getShapesByType(String type) {
+        return shapeRepository.findByType(type);
     }
 
 }
