@@ -1,11 +1,14 @@
-package com.example.shapelibrary;
+package com.example.shapelibrary.repository.entities;
 
-import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
-
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Component
 @Entity
 @DiscriminatorValue("rectangle")
@@ -20,9 +23,14 @@ public class Rectangle extends Shape {
     }
 
     @Override
-    void setParameters(double[] doubles) {
+    public void setParameters(double[] doubles) {
         this.width = doubles[0];
         this.length = doubles[1];
+    }
+
+    @Override
+    public double[] getParameters() {
+        return new double[]{width,length};
     }
 
     @Override

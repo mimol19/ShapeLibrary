@@ -1,5 +1,6 @@
-package com.example.shapelibrary;
+package com.example.shapelibrary.repository.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,8 +14,13 @@ public abstract class Shape {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String type;
-    abstract String getType();
-    abstract void setParameters(double[]doubles);
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "creator_id")
+    @JsonIgnore
+    private Creator creator;
+    public abstract String getType();
+    public abstract void setParameters(double[] doubles);
+    public abstract double[] getParameters();
     abstract double calculateArea();
 
 }
