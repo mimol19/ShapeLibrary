@@ -8,17 +8,7 @@ import org.springframework.stereotype.Component;
 @Entity
 @DiscriminatorValue("square")
 public class Square extends Shape {
-    private  double side;
-@Override
-    public void setParameters(double[] doubles) {
-        this.side = doubles[0];
-    }
-
-    @Override
-    public double[] getParameters() {
-        return new double[]{side};
-    }
-
+    private static final int REQUIRED_PARAMS = 1;
     @Override
     public String getType() {
         return "SQUARE";
@@ -27,6 +17,11 @@ public class Square extends Shape {
 
     @Override
     public double calculateArea() {
-        return side*side;
+        return parameters[0] * parameters[0];
+    }
+
+    @Override
+    public int getRequiredParameterCount() {
+        return REQUIRED_PARAMS;
     }
 }

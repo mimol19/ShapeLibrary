@@ -1,4 +1,4 @@
-package com.example.shapelibrary.business;
+package com.example.shapelibrary.domain;
 
 import com.example.shapelibrary.controller.dto.ShapeDto;
 import com.example.shapelibrary.repository.ShapeRepository;
@@ -6,6 +6,8 @@ import com.example.shapelibrary.repository.entities.User;
 import com.example.shapelibrary.repository.entities.Shape;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ShapeService {
     public final Map<String, Shape> shapeMap;
@@ -41,8 +44,15 @@ public class ShapeService {
         shape.setUser(user);
 
         shapeMapper.mapToShape(shapeDto, shape);
-        Shape saved = shapeRepository.save(shape);
+        Shape saved = getSaved(shape);
+        log.info("Shape created and saved: ID={}, Type={}, Parameters={}, User={}",
+                saved.getId(), saved.getType(), saved.getParameters(), saved.getUser().getName());
+
         return shapeMapper.mapToDto(saved);
+    }
+
+    public Shape getSaved(@Valid Shape shape) {
+        return shapeRepository.save(shape);
     }
 
     public List<ShapeDto> getShapesByType(String type) {
@@ -51,6 +61,7 @@ public class ShapeService {
                 .orElseThrow(() -> new IllegalArgumentException("Unknown shape type: " + type));
 
         List<Shape> byType = shapeRepository.findByType(type);
+        log.info("Retrieved {} shapes of type: {}", byType.size(), type);
         return byType.stream().map(shapeMapper::mapToDto).collect(Collectors.toList());
     }
 
@@ -59,26 +70,13 @@ public class ShapeService {
         Shape shape = shapeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Shape not found with ID: " + id));
 
-        if (!"CIRCLE".equalsIgnoreCase(shape.getType())) {
+        if (!"CIRCLE".equals(shape.getType())) {
             throw new IllegalArgumentException("Only circles can have their radius changed.");
         }
 
         shape.setParameters(new double[]{10.0});
+        log.info("Circle radius changed: ID={}, New Radius={}, User={}",
+                shape.getId(), shape.getParameters()[0], shape.getUser().getName());
         return shapeMapper.mapToDto(shape);
     }
-
-
-//    @Transactional
-//    public ShapeDto changeCircleRadiusToTen(Long id) {
-//        Optional<Shape> byId = shapeRepository.findById(id);
-//        if (byId.isPresent()) {
-//            if (byId.get().getType().equals("CIRCLE")) {
-//                byId.get().setParameters(new double[]{10});
-//                return shapeMapper.mapToDto(byId.get());
-//            }
-//        }
-//        return null;
-//    }
-
-
 }

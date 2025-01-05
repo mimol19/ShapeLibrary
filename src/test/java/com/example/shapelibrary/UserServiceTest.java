@@ -1,7 +1,6 @@
 package com.example.shapelibrary;
 
-import com.example.shapelibrary.business.UserService;
-import com.example.shapelibrary.repository.ShapeRepository;
+import com.example.shapelibrary.domain.UserService;
 import com.example.shapelibrary.repository.UserRepository;
 import com.example.shapelibrary.repository.entities.User;
 import org.junit.jupiter.api.Test;

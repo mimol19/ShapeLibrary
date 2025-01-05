@@ -2,7 +2,8 @@ package com.example.shapelibrary.controller;
 
 import com.example.shapelibrary.repository.ShapeRepository;
 import com.example.shapelibrary.controller.dto.ShapeDto;
-import com.example.shapelibrary.business.ShapeService;
+import com.example.shapelibrary.domain.ShapeService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class ShapeController {
     private ShapeService shapeService;
 
     @PostMapping
-    public ResponseEntity<ShapeDto> addShape(@RequestBody ShapeDto request) {
+    public ResponseEntity<ShapeDto> addShape(@Valid @RequestBody ShapeDto request) {
         ShapeDto shape = shapeService.createShape(request);
         return ResponseEntity.ok(shape);
     }

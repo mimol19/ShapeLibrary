@@ -8,27 +8,19 @@ import org.springframework.stereotype.Component;
 @Entity
 @DiscriminatorValue("circle")
 public class Circle extends Shape {
-    private double radius;
-
-
+    private static final int REQUIRED_PARAMS = 1;
     @Override
     public String getType() {
         return "CIRCLE";
     }
 
     @Override
-    public void setParameters(double[] doubles) {
-        this.radius = doubles[0];
-    }
-
-    @Override
-    public double[] getParameters() {
-        return new double[]{radius};
-    }
-
-
-    @Override
     public double calculateArea() {
-        return radius * radius;
+        return parameters[0] * parameters[0] * Math.PI;
+    }
+
+    @Override
+    public int getRequiredParameterCount() {
+        return REQUIRED_PARAMS;
     }
 }

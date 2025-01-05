@@ -1,10 +1,12 @@
 package com.example.shapelibrary;
 
+import com.example.shapelibrary.controller.dto.ShapeDto;
 import com.example.shapelibrary.repository.ShapeRepository;
 import com.example.shapelibrary.repository.UserRepository;
 import com.example.shapelibrary.repository.entities.Circle;
 import com.example.shapelibrary.repository.entities.Shape;
 import com.example.shapelibrary.repository.entities.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +14,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
-
-import java.util.Collections;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,6 +28,9 @@ public class ShapeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Autowired
     private ShapeRepository shapeRepository;
@@ -53,6 +58,8 @@ public class ShapeControllerTest {
 
     @Test
     void shouldAddShapeSuccessfully() throws Exception {
+        //
+
         String json1 = """
                 {
                 "type": "CIRCLE",
@@ -61,12 +68,36 @@ public class ShapeControllerTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/v1/shapes")
+        ResultActions result = mockMvc.perform(post("/api/v1/shapes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.type").value("CIRCLE"))
                 .andExpect(jsonPath("$.userName").value("John"));
+//todo
+//
+//        ShapeDto createdShape1 = objectMapper.readValue(result.andReturn().getResponse().getContentAsString(), ShapeDto.class);
+//        assertNotNull(createdShape1.getId());
+//
+//        Shape shapeInDb1 = shapeRepository.findById(createdShape1.getId()).orElseThrow();
+//        assertEquals("CIRCLE", shapeInDb1.getType());
+//        assertEquals("John", shapeInDb1.getUser().getName());
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenParametersAreInvalid() throws Exception {
+        String invalidJson = """
+                {
+                "type": "CIRCLE",
+                "parameters": [],
+                "userName": "John"
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/shapes")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -104,14 +135,7 @@ public class ShapeControllerTest {
 
     @Test
     void shouldGetUsersSuccessfully() throws Exception {
-//
-//        Shape createdShape1 = objectMapper.readValue(result1.getResponse().getContentAsString(), Shape.class);
-//        assertNotNull(createdShape1.getId());
-//
-//        // Weryfikacja w bazie
-//        Shape shapeInDb1 = shapeRepository.findById(createdShape1.getId()).orElseThrow();
-//        assertEquals("CIRCLE", shapeInDb1.getType());
-//        assertEquals("John", shapeInDb1.getCreatorName());
+
         // TODO
 
         createCircle(10.0, createUser("John"));

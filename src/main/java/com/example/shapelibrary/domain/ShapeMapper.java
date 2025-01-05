@@ -1,4 +1,4 @@
-package com.example.shapelibrary.business;
+package com.example.shapelibrary.domain;
 
 import com.example.shapelibrary.controller.dto.ShapeDto;
 import com.example.shapelibrary.repository.entities.Shape;

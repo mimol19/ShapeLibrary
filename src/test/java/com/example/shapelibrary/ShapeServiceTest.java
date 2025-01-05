@@ -1,10 +1,9 @@
 package com.example.shapelibrary;
 
-import com.example.shapelibrary.business.ShapeMapper;
-import com.example.shapelibrary.business.ShapeService;
-import com.example.shapelibrary.business.UserService;
+import com.example.shapelibrary.domain.ShapeMapper;
+import com.example.shapelibrary.domain.ShapeService;
+import com.example.shapelibrary.domain.UserService;
 import com.example.shapelibrary.controller.dto.ShapeDto;
-import com.example.shapelibrary.repository.UserRepository;
 import com.example.shapelibrary.repository.ShapeRepository;
 import com.example.shapelibrary.repository.entities.*;
 import jakarta.persistence.EntityNotFoundException;

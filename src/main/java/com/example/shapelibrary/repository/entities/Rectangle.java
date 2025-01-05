@@ -7,36 +7,24 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 @Component
 @Entity
 @DiscriminatorValue("rectangle")
 public class Rectangle extends Shape {
-    private double width;
-    private double length;
-
-
+    private static final int REQUIRED_PARAMS = 2;
     @Override
     public String getType() {
         return "RECTANGLE";
     }
 
     @Override
-    public void setParameters(double[] doubles) {
-        this.width = doubles[0];
-        this.length = doubles[1];
-    }
-
-    @Override
-    public double[] getParameters() {
-        return new double[]{width,length};
-    }
-
-    @Override
     public double calculateArea() {
-        return width * length;
+        return parameters[0] * parameters[1];
     }
 
-
+    @Override
+    public int getRequiredParameterCount() {
+        return REQUIRED_PARAMS;
+    }
 }

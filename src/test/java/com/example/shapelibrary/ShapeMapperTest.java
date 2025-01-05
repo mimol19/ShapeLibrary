@@ -1,7 +1,6 @@
 package com.example.shapelibrary;
 
-import com.example.shapelibrary.business.ShapeMapper;
-import com.example.shapelibrary.business.ShapeService;
+import com.example.shapelibrary.domain.ShapeMapper;
 import com.example.shapelibrary.controller.dto.ShapeDto;
 import com.example.shapelibrary.repository.entities.Rectangle;
 import com.example.shapelibrary.repository.entities.Shape;
@@ -9,7 +8,6 @@ import com.example.shapelibrary.repository.entities.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collections;
 
@@ -47,20 +45,4 @@ public class ShapeMapperTest {
         assertEquals(shape.getType(), shapeDto.getType());
         assertArrayEquals(shape.getParameters(), shapeDto.getParameters());
     }
-
-// TODO
-//    @Test
-//    void shouldHandleNullUserInShape() {
-//
-//        Rectangle rectangle = new Rectangle();
-//        rectangle.setId(1L);
-//        rectangle.setType("RECTANGLE");
-//        rectangle.setUser(null);
-//        rectangle.setParameters(new double[]{4.0, 5.0});
-//
-//        ShapeDto shapeDto = shapeMapper.mapToDto(rectangle);
-//
-//        assertEquals("RECTANGLE", shapeDto.getType());
-//        assertNull(shapeDto.getUserName());
-//    }
 }
