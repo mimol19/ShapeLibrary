@@ -15,9 +15,9 @@ public abstract class Shape {
     private Long id;
     private String type;
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "creator_id")
+    @JoinColumn(name = "user_id")
     @JsonIgnore
-    private Creator creator;
+    private User user;
     public abstract String getType();
     public abstract void setParameters(double[] doubles);
     public abstract double[] getParameters();

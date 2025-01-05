@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -15,7 +16,6 @@ import java.util.List;
 public class ShapeController {
     private ShapeRepository shapeRepository;
     private ShapeService shapeService;
-
 
     @PostMapping
     public ResponseEntity<ShapeDto> addShape(@RequestBody ShapeDto request) {
@@ -25,11 +25,10 @@ public class ShapeController {
 
     @GetMapping
     public ResponseEntity<List<ShapeDto>> getShapesByType(@RequestParam String type) {
-        List<ShapeDto> shapes = shapeService.getShapesByType(type);
-        if (shapes.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(shapes);
+        return Optional.of(shapeService.getShapesByType(type))
+                .filter(shapes -> !shapes.isEmpty())
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 
     @PatchMapping

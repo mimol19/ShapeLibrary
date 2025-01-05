@@ -11,14 +11,15 @@ import java.util.List;
 @Builder
 @Entity
 @ToString
-public class Creator {
+@Table(name = "USERS")
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-    @OneToMany(mappedBy = "creator", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Shape> shapes;
 
 }

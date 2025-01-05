@@ -1,10 +1,13 @@
 package com.example.shapelibrary;
 
+import com.example.shapelibrary.business.ShapeMapper;
 import com.example.shapelibrary.business.ShapeService;
+import com.example.shapelibrary.business.UserService;
 import com.example.shapelibrary.controller.dto.ShapeDto;
-import com.example.shapelibrary.repository.CreatorRepository;
+import com.example.shapelibrary.repository.UserRepository;
 import com.example.shapelibrary.repository.ShapeRepository;
 import com.example.shapelibrary.repository.entities.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,7 +26,9 @@ class ShapeServiceTest {
     private ShapeRepository shapeRepository;
 
     @Mock
-    private CreatorRepository creatorRepository;
+    private UserService userService;
+    @Mock
+    private ShapeMapper shapeMapper;
 
     private ShapeService shapeService;
 
@@ -33,7 +38,7 @@ class ShapeServiceTest {
         shapeMap.put("CIRCLE", new Circle());
         shapeMap.put("SQUARE", new Square());
 
-        shapeService = new ShapeService(new ArrayList<>(shapeMap.values()), shapeRepository, creatorRepository);
+        shapeService = new ShapeService(new ArrayList<>(shapeMap.values()), shapeRepository, userService, shapeMapper);
     }
 
     @Test
@@ -42,33 +47,35 @@ class ShapeServiceTest {
         ShapeDto shapeDto = ShapeDto.builder()
                 .type(type)
                 .parameters(new double[]{10})
-                .creatorName("John")
+                .userName("John")
                 .build();
-        Creator creator = Creator.builder().id(1L).name("John").build();
+        User user = User.builder().id(1L).name("John").build();
 
-        when(creatorRepository.findByName("John")).thenReturn(Optional.of(creator));
+        Shape shape = shapeService.shapeMap.get(type);
+
+        when(userService.getOrCreateUser("John")).thenReturn(user);
+        when(shapeMapper.mapToDto(any(Shape.class))).thenReturn(shapeDto);
         when(shapeRepository.save(any(Shape.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         ShapeDto result = shapeService.createShape(shapeDto);
 
         assertNotNull(result);
         assertEquals(type, result.getType());
-        assertEquals("John", result.getCreatorName());
-        verify(creatorRepository, times(1)).findByName("John");
+        assertEquals("John", result.getUserName());
+        verify(userService, times(1)).getOrCreateUser("John");
         verify(shapeRepository, times(1)).save(any(Shape.class));
     }
 
     @Test
     void shouldThrowExceptionForUnknownShapeType() {
-        // Arrange
         double[] doubles = {15.18, 12.3};
         ShapeDto request = new ShapeDto(4L, "TRIANGLE", doubles, "John");
 
-        // Act & Assert
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> shapeService.createShape(request)
         );
+
         assertEquals("Unknown shape type: TRIANGLE", exception.getMessage());
     }
 
@@ -79,50 +86,88 @@ class ShapeServiceTest {
         circle1.setId(1L);
         circle1.setType(type);
         circle1.setParameters(new double[]{10});
-        circle1.setCreator(Creator.builder().name("Marry").build());
+        circle1.setUser(User.builder().name("Marry").build());
 
         Shape circle2 = new Circle();
         circle2.setId(2L);
         circle2.setType(type);
         circle2.setParameters(new double[]{15});
-        circle2.setCreator(Creator.builder().name("Jane").build());
+        circle2.setUser(User.builder().name("Jane").build());
+
+        ShapeDto expectedDto1 = ShapeDto.builder()
+                .id(1L)
+                .type(type)
+                .userName("Marry")
+                .parameters(new double[]{10})
+                .build();
+
+        ShapeDto expectedDto2 = ShapeDto.builder()
+                .id(2L)
+                .type(type)
+                .userName("Jane")
+                .parameters(new double[]{15})
+                .build();
 
         when(shapeRepository.findByType(type)).thenReturn(List.of(circle1, circle2));
+        when(shapeMapper.mapToDto(circle1)).thenReturn(expectedDto1);
+        when(shapeMapper.mapToDto(circle2)).thenReturn(expectedDto2);
 
         List<ShapeDto> result = shapeService.getShapesByType(type);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals(circle1.getCreator().getName(), result.getFirst().getCreatorName());
-        assertEquals(circle2.getCreator().getName(), result.get(1).getCreatorName());
+        assertEquals(circle1.getUser().getName(), result.getFirst().getUserName());
+        assertEquals(circle2.getUser().getName(), result.get(1).getUserName());
         verify(shapeRepository, times(1)).findByType(type);
     }
 
     @Test
-    void shouldReturnEmptyListIfNoShapesOfType() {
+    void shouldThrowExceptionIfUnknownShape() {
+        String type = "HEXAGON";
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> shapeService.getShapesByType(type)
+        );
+
+        assertEquals("Unknown shape type: " + type, exception.getMessage());
+        verify(shapeRepository, times(0)).findByType(type);
+    }
+
+    @Test
+    void shouldThrowExceptionIfNoShapesOfType() {
         // Arrange
-        when(shapeRepository.findByType("HEXAGON")).thenReturn(List.of());
+        when(shapeRepository.findByType("CIRCLE")).thenReturn(List.of());
 
         // Act
-        List<ShapeDto> result = shapeService.getShapesByType("HEXAGON");
+        List<ShapeDto> result = shapeService.getShapesByType("CIRCLE");
 
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(shapeRepository).findByType("HEXAGON");
+        verify(shapeRepository).findByType("CIRCLE");
     }
 
 
     @Test
     void shouldChangeCircleRadiusToTenWhenShapeExists() {
-        Creator creator = new Creator(1L, "John Doe", Collections.emptyList());
+        User user = new User(1L, "John Doe", Collections.emptyList());
         Long shapeId = 1L;
         Shape circle = new Circle();
         circle.setId(shapeId);
         circle.setType("CIRCLE");
         circle.setParameters(new double[]{5});
-        circle.setCreator(creator);
+        circle.setUser(user);
+
+        ShapeDto expectedDto = ShapeDto.builder()
+                .id(shapeId)
+                .type("CIRCLE")
+                .userName("John Doe")
+                .parameters(new double[]{10})
+                .build();
+
         when(shapeRepository.findById(shapeId)).thenReturn(Optional.of(circle));
+        when(shapeMapper.mapToDto(circle)).thenReturn(expectedDto);
 
         ShapeDto result = shapeService.changeCircleRadiusToTen(shapeId);
 
@@ -132,88 +177,33 @@ class ShapeServiceTest {
     }
 
     @Test
-    void shouldReturnNullWhenShapeNotFound() {
-        Long shapeId = 1L;
-        when(shapeRepository.findById(shapeId)).thenReturn(Optional.empty());
-
-        ShapeDto result = shapeService.changeCircleRadiusToTen(shapeId);
-
-        assertNull(result);
-        verify(shapeRepository, times(1)).findById(shapeId);
-    }
-
-    @Test
-    void shouldReturnNullWhenShapeIsNotCircle() {
+    void shouldThrowExceptionWhenShapeIsNotCircle() {
         Long shapeId = 1L;
         Shape square = new Square();
         square.setId(shapeId);
         square.setType("SQUARE");
         when(shapeRepository.findById(shapeId)).thenReturn(Optional.of(square));
 
-        ShapeDto result = shapeService.changeCircleRadiusToTen(shapeId);
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> shapeService.changeCircleRadiusToTen(shapeId)
+        );
 
-        assertNull(result);
+        assertEquals("Only circles can have their radius changed.", exception.getMessage());
         verify(shapeRepository, times(1)).findById(shapeId);
     }
 
-
     @Test
-    void shouldReturnExistingCreator() {
-        String creatorName = "John";
-        Creator existingCreator = Creator.builder().name(creatorName).build();
-        when(creatorRepository.findByName(creatorName)).thenReturn(Optional.of(existingCreator));
+    void shouldThrowExceptionWhenShapeNotFound() {
+        Long shapeId = 1L;
+        when(shapeRepository.findById(shapeId)).thenReturn(Optional.empty());
 
-        Creator result = shapeService.getOrCreateCreator(creatorName);
+        EntityNotFoundException exception = assertThrows(
+                EntityNotFoundException.class,
+                () -> shapeService.changeCircleRadiusToTen(shapeId)
+        );
 
-        assertEquals(existingCreator, result);
-        verify(creatorRepository, times(1)).findByName(creatorName);
-        verify(creatorRepository, times(0)).save(any(Creator.class));
+        assertEquals("Shape not found with ID: " + shapeId, exception.getMessage());
+        verify(shapeRepository, times(1)).findById(shapeId);
     }
-
-    @Test
-    void shouldCreateNewCreatorWhenNotExist() {
-        String creatorName = "Jane";
-
-        when(creatorRepository.findByName(creatorName)).thenReturn(Optional.empty());
-        Creator creator = Creator.builder().name(creatorName).build();
-        when(creatorRepository.save(any(Creator.class))).thenReturn(creator);
-
-        Creator result = shapeService.getOrCreateCreator(creatorName);
-
-        assertNotNull(result);
-        assertEquals(creatorName, result.getName());
-        verify(creatorRepository, times(1)).findByName(creatorName);
-        verify(creatorRepository, times(1)).save(any(Creator.class));
-    }
-
-
-    @Test
-    void shouldMapShapeToShapeDto() {
-        Creator creator = new Creator(1L, "John Doe", Collections.emptyList());
-        Rectangle rectangle = new Rectangle();
-        rectangle.setId(1L);
-        rectangle.setType("RECTANGLE");
-        rectangle.setCreator(creator);
-        rectangle.setParameters(new double[]{4.0, 5.0});
-
-        ShapeDto shapeDto = ShapeService.mapToDto(rectangle);
-
-        assertEquals(rectangle.getId(), shapeDto.getId());
-        assertEquals(rectangle.getType(), shapeDto.getType());
-        assertEquals(rectangle.getCreator().getName(), shapeDto.getCreatorName());
-    }
-
-    @Test
-    void shouldMapShapeDtoToShape() {
-        ShapeDto shapeDto = new ShapeDto(1L, "RECTANGLE", new double[]{40.0, 15.0}, "Adam");
-        Shape shape = new Rectangle();
-
-        ShapeService.mapToShape(shapeDto, shape);
-
-        assertNull(shape.getId());
-        assertEquals(shape.getType(), shapeDto.getType());
-        assertArrayEquals(shape.getParameters(), shapeDto.getParameters());
-    }
-
-
 }

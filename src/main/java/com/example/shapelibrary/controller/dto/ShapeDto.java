@@ -8,10 +8,10 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
+@Value
 public class ShapeDto {
-    private Long id;
-    private String type;
-
-    private double[] parameters;
-    private String creatorName;
+    Long id;
+    String type;
+    double[] parameters;
+    String userName;
 }
