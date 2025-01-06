@@ -20,7 +20,7 @@ public class Rectangle extends Shape {
 
     @Override
     public double calculateArea() {
-        return parameters[0] * parameters[1];
+        return parameters.get(0) * parameters.get(1);
     }
 
     @Override

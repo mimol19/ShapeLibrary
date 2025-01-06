@@ -16,6 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -51,15 +53,13 @@ public class ShapeControllerTest {
     private Shape createCircle(double parameter, User user) {
         Shape circle = new Circle();
         circle.setType("CIRCLE");
-        circle.setParameters(new double[]{parameter});
+        circle.setParameters(List.of(parameter));
         circle.setUser(user);
         return shapeRepository.save(circle);
     }
 
     @Test
     void shouldAddShapeSuccessfully() throws Exception {
-        //
-
         String json1 = """
                 {
                 "type": "CIRCLE",
@@ -73,15 +73,16 @@ public class ShapeControllerTest {
                         .content(json1))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.type").value("CIRCLE"))
-                .andExpect(jsonPath("$.userName").value("John"));
-//todo
-//
-//        ShapeDto createdShape1 = objectMapper.readValue(result.andReturn().getResponse().getContentAsString(), ShapeDto.class);
-//        assertNotNull(createdShape1.getId());
-//
-//        Shape shapeInDb1 = shapeRepository.findById(createdShape1.getId()).orElseThrow();
-//        assertEquals("CIRCLE", shapeInDb1.getType());
-//        assertEquals("John", shapeInDb1.getUser().getName());
+                .andExpect(jsonPath("$.userName").value("John"))
+                .andExpect(jsonPath("$.parameters[0]").value(15.0));
+
+        ShapeDto createdShape1 = objectMapper.readValue(result.andReturn().getResponse().getContentAsString(), ShapeDto.class);
+        assertNotNull(createdShape1.getId());
+
+        Shape shapeInDb1 = shapeRepository.findById(createdShape1.getId()).orElseThrow();
+        assertEquals("CIRCLE", shapeInDb1.getType());
+        assertEquals("John", shapeInDb1.getUser().getName());
+        assertEquals(List.of(15.0), shapeInDb1.getParameters());
     }
 
     @Test
@@ -106,7 +107,7 @@ public class ShapeControllerTest {
         User user2 = createUser("Jane");
 
         createCircle(10.0, user1);
-        createCircle(10.0, user2);
+        createCircle(15.0, user2);
 
         mockMvc.perform(get("/api/v1/shapes?type=CIRCLE")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -116,7 +117,16 @@ public class ShapeControllerTest {
                 .andExpect(jsonPath("$[0].userName").value("John"))
                 .andExpect(jsonPath("$[0].parameters[0]").value(10.0))
                 .andExpect(jsonPath("$[1].type").value("CIRCLE"))
-                .andExpect(jsonPath("$[1].userName").value("Jane"));
+                .andExpect(jsonPath("$[1].userName").value("Jane"))
+                .andExpect(jsonPath("$[1].parameters[0]").value(15.0));
+
+        List<Shape> shapesInDb = shapeRepository.findByType("CIRCLE");
+        assertEquals(2, shapesInDb.size());
+
+        assertEquals("John", shapesInDb.get(0).getUser().getName());
+        assertEquals(10.0, shapesInDb.get(0).getParameters().get(0), 0.01);
+        assertEquals("Jane", shapesInDb.get(1).getUser().getName());
+        assertEquals(15.0, shapesInDb.get(1).getParameters().get(0), 0.01);
     }
 
     @Test
@@ -125,28 +135,41 @@ public class ShapeControllerTest {
         Shape shape = createCircle(15.0, user);
         Long shapeId = shape.getId();
 
-        mockMvc.perform(patch("/api/v1/shapes?id=" + shapeId)
+        ResultActions result = mockMvc.perform(patch("/api/v1/shapes?id=" + shapeId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.parameters[0]").value(10.0))
                 .andExpect(jsonPath("$.type").value("CIRCLE"))
                 .andExpect(jsonPath("$.userName").value("John"));
+
+        ShapeDto createdShape1 = objectMapper.readValue(result.andReturn().getResponse().getContentAsString(), ShapeDto.class);
+        assertNotNull(createdShape1.getId());
+
+        Shape shapeInDb1 = shapeRepository.findById(createdShape1.getId()).orElseThrow();
+        assertEquals("CIRCLE", shapeInDb1.getType());
+        assertEquals("John", shapeInDb1.getUser().getName());
+        assertEquals(List.of(10.0), shapeInDb1.getParameters());
     }
 
     @Test
     void shouldGetUsersSuccessfully() throws Exception {
 
-        // TODO
-
         createCircle(10.0, createUser("John"));
         createCircle(10.0, createUser("Jane"));
 
-        mockMvc.perform(get("/api/v1/users")
+        ResultActions result = mockMvc.perform(get("/api/v1/users")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.size()").value(2))
                 .andExpect(jsonPath("$[0].name").value("John"))
                 .andExpect(jsonPath("$[1].name").value("Jane"));
+
+        List<User> usersInDb = userRepository.findAll();
+        assertEquals(2, usersInDb.size());
+
+
+        assertEquals("John", usersInDb.get(0).getName());
+        assertEquals("Jane", usersInDb.get(1).getName());
     }
 
     @Test

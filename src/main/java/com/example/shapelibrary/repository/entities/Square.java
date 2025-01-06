@@ -17,7 +17,7 @@ public class Square extends Shape {
 
     @Override
     public double calculateArea() {
-        return parameters[0] * parameters[0];
+        return parameters.get(0) * parameters.get(0);
     }
 
     @Override

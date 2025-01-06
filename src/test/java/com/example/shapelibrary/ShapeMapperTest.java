@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +26,7 @@ public class ShapeMapperTest {
         rectangle.setId(1L);
         rectangle.setType("RECTANGLE");
         rectangle.setUser(user);
-        rectangle.setParameters(new double[]{4.0, 5.0});
+        rectangle.setParameters(List.of(4.0, 5.0));
 
         ShapeDto shapeDto = shapeMapper.mapToDto(rectangle);
 
@@ -36,13 +37,13 @@ public class ShapeMapperTest {
 
     @Test
     void shouldMapShapeDtoToShape() {
-        ShapeDto shapeDto = new ShapeDto(1L, "RECTANGLE", new double[]{40.0, 15.0}, "Adam");
+        ShapeDto shapeDto = new ShapeDto(1L, "RECTANGLE", List.of(40.0, 15.0), "Adam");
         Shape shape = new Rectangle();
 
         shapeMapper.mapToShape(shapeDto, shape);
 
         assertNull(shape.getId());
         assertEquals(shape.getType(), shapeDto.getType());
-        assertArrayEquals(shape.getParameters(), shapeDto.getParameters());
+        assertEquals(shape.getParameters(), shapeDto.getParameters());
     }
 }

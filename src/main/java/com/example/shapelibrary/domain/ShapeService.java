@@ -74,9 +74,9 @@ public class ShapeService {
             throw new IllegalArgumentException("Only circles can have their radius changed.");
         }
 
-        shape.setParameters(new double[]{10.0});
+        shape.setParameters(List.of(10.0));
         log.info("Circle radius changed: ID={}, New Radius={}, User={}",
-                shape.getId(), shape.getParameters()[0], shape.getUser().getName());
+                shape.getId(), shape.getParameters().get(0), shape.getUser().getName());
         return shapeMapper.mapToDto(shape);
     }
 }

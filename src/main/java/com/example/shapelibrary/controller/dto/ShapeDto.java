@@ -3,6 +3,8 @@ package com.example.shapelibrary.controller.dto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.util.List;
+
 
 @AllArgsConstructor
 @Getter
@@ -16,7 +18,7 @@ public class ShapeDto {
     String type;
     @NotNull(message = "Parameters cannot be null")
     @Size(min = 1, message = "At least one parameter is required.")
-    double[] parameters;
+    List<Double> parameters;
     @NotBlank(message = "User name cannot be blank")
     String userName;
 }

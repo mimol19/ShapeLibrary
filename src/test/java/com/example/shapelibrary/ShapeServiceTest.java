@@ -45,7 +45,7 @@ class ShapeServiceTest {
         String type = "CIRCLE";
         ShapeDto shapeDto = ShapeDto.builder()
                 .type(type)
-                .parameters(new double[]{10})
+                .parameters(List.of(10.0))
                 .userName("John")
                 .build();
         User user = User.builder().id(1L).name("John").build();
@@ -67,8 +67,7 @@ class ShapeServiceTest {
 
     @Test
     void shouldThrowExceptionForUnknownShapeType() {
-        double[] doubles = {15.18, 12.3};
-        ShapeDto request = new ShapeDto(4L, "TRIANGLE", doubles, "John");
+        ShapeDto request = new ShapeDto(4L, "TRIANGLE", List.of(15.18, 12.3), "John");
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -84,27 +83,27 @@ class ShapeServiceTest {
         Shape circle1 = new Circle();
         circle1.setId(1L);
         circle1.setType(type);
-        circle1.setParameters(new double[]{10});
+        circle1.setParameters(List.of(10.0));
         circle1.setUser(User.builder().name("Marry").build());
 
         Shape circle2 = new Circle();
         circle2.setId(2L);
         circle2.setType(type);
-        circle2.setParameters(new double[]{15});
+        circle2.setParameters(List.of(15.0));
         circle2.setUser(User.builder().name("Jane").build());
 
         ShapeDto expectedDto1 = ShapeDto.builder()
                 .id(1L)
                 .type(type)
                 .userName("Marry")
-                .parameters(new double[]{10})
+                .parameters(List.of(10.0))
                 .build();
 
         ShapeDto expectedDto2 = ShapeDto.builder()
                 .id(2L)
                 .type(type)
                 .userName("Jane")
-                .parameters(new double[]{15})
+                .parameters(List.of(15.0))
                 .build();
 
         when(shapeRepository.findByType(type)).thenReturn(List.of(circle1, circle2));
@@ -155,14 +154,14 @@ class ShapeServiceTest {
         Shape circle = new Circle();
         circle.setId(shapeId);
         circle.setType("CIRCLE");
-        circle.setParameters(new double[]{5});
+        circle.setParameters(List.of(5.0));
         circle.setUser(user);
 
         ShapeDto expectedDto = ShapeDto.builder()
                 .id(shapeId)
                 .type("CIRCLE")
                 .userName("John Doe")
-                .parameters(new double[]{10})
+                .parameters(List.of(10.0))
                 .build();
 
         when(shapeRepository.findById(shapeId)).thenReturn(Optional.of(circle));
@@ -171,7 +170,7 @@ class ShapeServiceTest {
         ShapeDto result = shapeService.changeCircleRadiusToTen(shapeId);
 
         assertNotNull(result);
-        assertEquals(10.0, result.getParameters()[0]);
+        assertEquals(10.0, result.getParameters().getFirst());
         verify(shapeRepository, times(1)).findById(shapeId);
     }
 

@@ -4,6 +4,8 @@ import com.example.shapelibrary.repository.entities.Shape;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
+import java.util.List;
+
 public class ShapeValidator implements ConstraintValidator<ValidShape, Shape> {
 
     @Override
@@ -12,7 +14,7 @@ public class ShapeValidator implements ConstraintValidator<ValidShape, Shape> {
             return true;
         }
 
-        double[] params = shape.getParameters();
+        List<Double> params = shape.getParameters();
         if (params == null) {
             return false;
         }
@@ -21,11 +23,11 @@ public class ShapeValidator implements ConstraintValidator<ValidShape, Shape> {
                 && areAllParametersPositive(params);
     }
 
-    private boolean hasCorrectParameterCount(Shape shape, double[] params) {
-        return params.length == shape.getRequiredParameterCount();
+    private boolean hasCorrectParameterCount(Shape shape, List<Double> params) {
+        return params.size() == shape.getRequiredParameterCount();
     }
 
-    private boolean areAllParametersPositive(double[] params) {
+    private boolean areAllParametersPositive(List<Double> params) {
         for (double param : params) {
             if (param <= 0) {
                 return false;
